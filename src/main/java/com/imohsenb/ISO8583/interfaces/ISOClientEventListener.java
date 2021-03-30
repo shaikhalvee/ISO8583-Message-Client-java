@@ -5,14 +5,23 @@ package com.imohsenb.ISO8583.interfaces;
  */
 public interface ISOClientEventListener {
 
-    void connecting();
-    void connected();
-    void connectionFailed();
-    void connectionClosed();
-    void disconnected();
-    void beforeSendingMessage();
-    void afterSendingMessage();
-    void onReceiveData();
-    void beforeReceiveResponse();
-    void afterReceiveResponse();
+	void connecting();
+
+	void connected();
+
+	void connectionFailed();
+
+	void connectionClosed();
+
+	void disconnected();
+
+	void beforeSendingMessage();
+
+	void afterSendingMessage();
+
+	void onReceiveData();
+
+	void beforeReceiveResponse();
+
+	void afterReceiveResponse();
 }

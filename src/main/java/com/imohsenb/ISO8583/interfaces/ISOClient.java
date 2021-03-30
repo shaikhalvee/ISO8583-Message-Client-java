@@ -10,44 +10,38 @@ import java.io.IOException;
  */
 public interface ISOClient {
 
-    /**
-     *
-     * @throws ISOClientException
-     * @throws IOException
-     */
-    void connect() throws ISOClientException, IOException;
+	/**
+	 * @throws ISOClientException
+	 * @throws IOException
+	 */
+	void connect() throws ISOClientException, IOException;
 
-    /**
-     *
-     */
-    void disconnect();
+	/**
+	 *
+	 */
+	void disconnect();
 
-    /**
-     *
-     * @param isoMessage
-     * @return
-     * @throws ISOClientException
-     * @throws IOException
-     */
-    byte[] sendMessageSync(ISOMessage isoMessage) throws ISOClientException, IOException;
+	/**
+	 * @param isoMessage
+	 * @return
+	 * @throws ISOClientException
+	 * @throws IOException
+	 */
+	byte[] sendMessageSync(ISOMessage isoMessage) throws ISOClientException, IOException;
 
-    /**
-     *
-     *
-     * @return
-     */
-    boolean isConnected();
+	/**
+	 * @return
+	 */
+	boolean isConnected();
 
-    /**
-     *
-     * @return
-     */
-    boolean isClosed();
+	/**
+	 * @return
+	 */
+	boolean isClosed();
 
-    /**
-     *
-     * @param isoClientEventListener
-     */
-    void setEventListener(ISOClientEventListener isoClientEventListener);
+	/**
+	 * @param isoClientEventListener
+	 */
+	void setEventListener(ISOClientEventListener isoClientEventListener);
 
 }

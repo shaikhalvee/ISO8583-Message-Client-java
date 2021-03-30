@@ -5,17 +5,17 @@ package com.imohsenb.ISO8583.enums;
  */
 public enum MESSAGE_FUNCTION {
 
-    Request("0"),
-    Advice("2");
+	Request("0"),
+	Advice("2");
 
-    private final String code;
+	private final String code;
 
-    MESSAGE_FUNCTION(String code) {
-        this.code = code;
-    }
+	MESSAGE_FUNCTION(String code) {
+		this.code = code;
+	}
 
-    public String getCode() {
-        return code;
-    }
+	public String getCode() {
+		return code;
+	}
 
 }

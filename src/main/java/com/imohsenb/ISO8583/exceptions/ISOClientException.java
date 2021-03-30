@@ -5,11 +5,11 @@ package com.imohsenb.ISO8583.exceptions;
  */
 public class ISOClientException extends Exception {
 
-    public ISOClientException(String message) {
-        super(message);
-    }
+	public ISOClientException(String message) {
+		super(message);
+	}
 
-    public ISOClientException(Exception e) {
-        super(e);
-    }
+	public ISOClientException(Exception e) {
+		super(e);
+	}
 }

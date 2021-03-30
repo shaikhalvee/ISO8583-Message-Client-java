@@ -5,7 +5,6 @@ import javax.net.ssl.KeyManager;
 /**
  * @author Mohsen Beiranvand
  */
-public interface SSLKeyManagers
-{
-    SSLTrustManagers setKeyManagers(KeyManager[] keyManagers);
+public interface SSLKeyManagers {
+	SSLTrustManagers setKeyManagers(KeyManager[] keyManagers);
 }

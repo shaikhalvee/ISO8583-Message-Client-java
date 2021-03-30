@@ -8,5 +8,5 @@ import com.imohsenb.ISO8583.exceptions.ISOException;
  */
 public interface UnpackMethods {
 
-    ISOMessage build() throws ISOException;
+	ISOMessage build() throws ISOException;
 }

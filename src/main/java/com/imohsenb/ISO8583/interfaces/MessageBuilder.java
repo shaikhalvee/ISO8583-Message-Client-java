@@ -5,5 +5,5 @@ package com.imohsenb.ISO8583.interfaces;
  */
 public interface MessageBuilder {
 
-    void build();
+	void build();
 }

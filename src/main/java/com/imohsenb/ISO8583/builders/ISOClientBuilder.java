@@ -20,269 +20,275 @@ import java.util.Arrays;
 public class ISOClientBuilder {
 
 
-    private static ClientBuilder clientBuilder;
-
-    public static ClientBuilder createSocket(String host, int port) {
-        clientBuilder = new ClientBuilder(host, port);
-        return clientBuilder;
-    }
-
-    /**
-     * ClientBuilder
-     */
-    public static class ClientBuilder {
-
-        private DefaultISOClient client;
-        /**
-         * Create ISO Client after initializing
-         * @param host socket Host
-         * @param port socket ip
-         */
-        public ClientBuilder(String host, int port) {
-            client = new DefaultISOClient();
-            client.setSocketAddress(host,port);
-        }
-
-        /**
-         * Sending with NIO (false) or Blocking IO (true)
-         * @param blocking:true
-         * @return {@link ClientBuilder}
-         */
-        public ClientBuilder configureBlocking(boolean blocking) {
-            client.setBlocking(blocking);
-            return this;
-        }
-
-        /**
-         * Enable sending over SSL/TLS
-         * @return {@link ClientBuilder}
-         */
-        public SSLProtocol enableSSL() {
-            return client.enableSSL(new SSLHandler(this));
-        }
-
-        /**
-         * Build ISOClient for sending label
-         * @return {@link ClientBuilder}
-         */
-        public ISOClient build() {
-            return client;
-        }
-
-        /**
-         * set Timeout for read from socket
-         * @param millisecond timeout in millisecond
-         * @return {@link ClientBuilder}
-         */
-        public ClientBuilder setReadTimeout(int millisecond) {
-            client.setReadTimeout(millisecond);
-            return this;
-        }
-
-        /**
-         * Set Message length in Byte
-         * @param bytes default: 2 byte
-         * @return {@link ClientBuilder}
-         */
-        public ClientBuilder length(int bytes) {
-            client.setLength(bytes);
-            return this;
-        }
-
-        /**
-         * Set event listener for dispatch events
-         * @param eventListener Implementation of {@link ISOClientEventListener}
-         * @return {@link ClientBuilder}
-         */
-        public ClientBuilder setEventListener(ISOClientEventListener eventListener) {
-            if(eventListener != null)
-                client.setEventListener(eventListener);
-            return this;
-        }
-    }
-
-    private static class DefaultISOClient implements ISOClient {
-
-        private SSLHandler sslHandler = null;
-        private SocketHandler socketHandler;
-        private ByteBuffer buffer;
-        private boolean blocking = true;
-        private volatile boolean connected = false;
-        private String host;
-        private int port;
-        private int readTimeout = 10000;
-        private int length = 2;
-
-        private final Object lock = new Object();
-        private ISOClientEventListener isoClientEventListener;
-
-        DefaultISOClient()
-        {
-            if(this.blocking) {
-                socketHandler = new IOSocketHandler();
-            }else{
-                socketHandler = new NIOSocketHandler();
-            }
+	private static ClientBuilder clientBuilder;
+
+	public static ClientBuilder createSocket(String host, int port) {
+		clientBuilder = new ClientBuilder(host, port);
+		return clientBuilder;
+	}
+
+	/**
+	 * ClientBuilder
+	 */
+	public static class ClientBuilder {
+
+		private DefaultISOClient client;
+
+		/**
+		 * Create ISO Client after initializing
+		 *
+		 * @param host socket Host
+		 * @param port socket ip
+		 */
+		public ClientBuilder(String host, int port) {
+			client = new DefaultISOClient();
+			client.setSocketAddress(host, port);
+		}
+
+		/**
+		 * Sending with NIO (false) or Blocking IO (true)
+		 *
+		 * @param blocking:true
+		 * @return {@link ClientBuilder}
+		 */
+		public ClientBuilder configureBlocking(boolean blocking) {
+			client.setBlocking(blocking);
+			return this;
+		}
+
+		/**
+		 * Enable sending over SSL/TLS
+		 *
+		 * @return {@link ClientBuilder}
+		 */
+		public SSLProtocol enableSSL() {
+			return client.enableSSL(new SSLHandler(this));
+		}
+
+		/**
+		 * Build ISOClient for sending label
+		 *
+		 * @return {@link ClientBuilder}
+		 */
+		public ISOClient build() {
+			return client;
+		}
+
+		/**
+		 * set Timeout for read from socket
+		 *
+		 * @param millisecond timeout in millisecond
+		 * @return {@link ClientBuilder}
+		 */
+		public ClientBuilder setReadTimeout(int millisecond) {
+			client.setReadTimeout(millisecond);
+			return this;
+		}
+
+		/**
+		 * Set Message length in Byte
+		 *
+		 * @param bytes default: 2 byte
+		 * @return {@link ClientBuilder}
+		 */
+		public ClientBuilder length(int bytes) {
+			client.setLength(bytes);
+			return this;
+		}
+
+		/**
+		 * Set event listener for dispatch events
+		 *
+		 * @param eventListener Implementation of {@link ISOClientEventListener}
+		 * @return {@link ClientBuilder}
+		 */
+		public ClientBuilder setEventListener(ISOClientEventListener eventListener) {
+			if (eventListener != null)
+				client.setEventListener(eventListener);
+			return this;
+		}
+	}
+
+	private static class DefaultISOClient implements ISOClient {
+
+		private SSLHandler sslHandler = null;
+		private SocketHandler socketHandler;
+		private ByteBuffer buffer;
+		private boolean blocking = true;
+		private volatile boolean connected = false;
+		private String host;
+		private int port;
+		private int readTimeout = 10000;
+		private int length = 2;
+
+		private final Object lock = new Object();
+		private ISOClientEventListener isoClientEventListener;
 
-            isoClientEventListener = new EmptyISOClientEventListener();
-        }
+		DefaultISOClient() {
+			if (this.blocking) {
+				socketHandler = new IOSocketHandler();
+			} else {
+				socketHandler = new NIOSocketHandler();
+			}
 
-        public void connect() throws ISOClientException, IOException {
-            isoClientEventListener.connecting();
+			isoClientEventListener = new EmptyISOClientEventListener();
+		}
 
-            if(sslHandler != null)
-                socketHandler.init(host, port, isoClientEventListener, sslHandler);
-            else socketHandler.init(host,port, isoClientEventListener);
+		public void connect() throws ISOClientException, IOException {
+			isoClientEventListener.connecting();
 
-            socketHandler.setReadTimeout(this.readTimeout);
-            this.connected = true;
+			if (sslHandler != null)
+				socketHandler.init(host, port, isoClientEventListener, sslHandler);
+			else socketHandler.init(host, port, isoClientEventListener);
 
-            isoClientEventListener.connected();
-        }
+			socketHandler.setReadTimeout(this.readTimeout);
+			this.connected = true;
 
-        public void disconnect() {
-            if(socketHandler!=null)
-                socketHandler.close();
-            if(buffer!=null) {
-                buffer.flip();
-                buffer.put(ByteBuffer.allocate(buffer.limit()));
-                buffer = null;
-            }
-            connected = false;
+			isoClientEventListener.connected();
+		}
 
-            isoClientEventListener.disconnected();
+		public void disconnect() {
+			if (socketHandler != null)
+				socketHandler.close();
+			if (buffer != null) {
+				buffer.flip();
+				buffer.put(ByteBuffer.allocate(buffer.limit()));
+				buffer = null;
+			}
+			connected = false;
 
-        }
+			isoClientEventListener.disconnected();
 
-        private ByteBuffer initBuffer(ISOMessage isoMessage) {
-            int len = isoMessage.getBody().length + isoMessage.getHeader().length;
+		}
 
-            buffer = ByteBuffer.allocate(len + length);
+		private ByteBuffer initBuffer(ISOMessage isoMessage) {
+			int len = isoMessage.getBody().length + isoMessage.getHeader().length;
 
-            if(length > 0)
-            {
-                byte[] mlen = ByteBuffer.allocate(4).putInt(len).array();
-                buffer.put(Arrays.copyOfRange(mlen, 2,4));
-            }
+			buffer = ByteBuffer.allocate(len + length);
 
-            buffer.put(isoMessage.getHeader())
-                    .put(isoMessage.getBody());
+			if (length > 0) {
+				byte[] mlen = ByteBuffer.allocate(4).putInt(len).array();
+				buffer.put(Arrays.copyOfRange(mlen, 2, 4));
+			}
 
-            return buffer;
-        }
+			buffer.put(isoMessage.getHeader())
+					.put(isoMessage.getBody());
 
-        public byte[] sendMessageSync(ISOMessage isoMessage) throws ISOClientException, IOException {
+			return buffer;
+		}
 
-            byte[] result = new byte[0];
+		public byte[] sendMessageSync(ISOMessage isoMessage) throws ISOClientException, IOException {
 
-            synchronized (lock) {
-                if (!isConnected())
-                    throw new ISOClientException("Client does not connected to a server!");
+			byte[] result = new byte[0];
 
-                ByteBuffer buffer = initBuffer(isoMessage);
+			synchronized (lock) {
+				if (!isConnected())
+					throw new ISOClientException("Client does not connected to a server!");
 
+				ByteBuffer buffer = initBuffer(isoMessage);
 
-                result = socketHandler.sendMessageSync(buffer, length);
-            }
 
-            return result;
-        }
+				result = socketHandler.sendMessageSync(buffer, length);
+			}
 
-        @Override
-        public boolean isConnected() {
-            return socketHandler != null && socketHandler.isConnected();
-        }
+			return result;
+		}
 
-        @Override
-        public boolean isClosed() {
-            return socketHandler != null && socketHandler.isClosed();
-        }
+		@Override
+		public boolean isConnected() {
+			return socketHandler != null && socketHandler.isConnected();
+		}
 
-        @Override
-        public void setEventListener(ISOClientEventListener isoClientEventListener) {
-            this.isoClientEventListener = isoClientEventListener;
-        }
+		@Override
+		public boolean isClosed() {
+			return socketHandler != null && socketHandler.isClosed();
+		}
 
-        private void setSocketAddress(String host, int port) {
-            this.host = host;
-            this.port = port;
-        }
+		@Override
+		public void setEventListener(ISOClientEventListener isoClientEventListener) {
+			this.isoClientEventListener = isoClientEventListener;
+		}
 
-        private SSLHandler enableSSL(SSLHandler sslHandler) {
-            this.sslHandler = sslHandler;
-            return sslHandler;
-        }
+		private void setSocketAddress(String host, int port) {
+			this.host = host;
+			this.port = port;
+		}
 
-        private void setBlocking(boolean blocking) {
-            this.blocking = blocking;
-        }
+		private SSLHandler enableSSL(SSLHandler sslHandler) {
+			this.sslHandler = sslHandler;
+			return sslHandler;
+		}
 
+		private void setBlocking(boolean blocking) {
+			this.blocking = blocking;
+		}
 
-        private void setReadTimeout(int readTimeout) {
-            this.readTimeout = readTimeout;
-        }
 
-        private void setLength(int length) {
-            this.length = length;
-        }
+		private void setReadTimeout(int readTimeout) {
+			this.readTimeout = readTimeout;
+		}
 
-        private int getLength() {
-            return length;
-        }
+		private void setLength(int length) {
+			this.length = length;
+		}
 
-    }
+		private int getLength() {
+			return length;
+		}
 
-    private static class EmptyISOClientEventListener implements ISOClientEventListener {
-        @Override
-        public void connecting() {
+	}
 
-        }
+	private static class EmptyISOClientEventListener implements ISOClientEventListener {
+		@Override
+		public void connecting() {
 
-        @Override
-        public void connected() {
+		}
 
-        }
+		@Override
+		public void connected() {
 
-        @Override
-        public void connectionFailed() {
+		}
 
-        }
+		@Override
+		public void connectionFailed() {
 
-        @Override
-        public void connectionClosed() {
+		}
 
-        }
+		@Override
+		public void connectionClosed() {
 
-        @Override
-        public void disconnected() {
+		}
 
-        }
+		@Override
+		public void disconnected() {
 
-        @Override
-        public void beforeSendingMessage() {
+		}
 
-        }
+		@Override
+		public void beforeSendingMessage() {
 
-        @Override
-        public void afterSendingMessage() {
+		}
 
-        }
+		@Override
+		public void afterSendingMessage() {
 
-        @Override
-        public void onReceiveData() {
+		}
 
-        }
+		@Override
+		public void onReceiveData() {
 
-        @Override
-        public void beforeReceiveResponse() {
+		}
 
-        }
+		@Override
+		public void beforeReceiveResponse() {
 
-        @Override
-        public void afterReceiveResponse() {
+		}
 
-        }
-    }
+		@Override
+		public void afterReceiveResponse() {
+
+		}
+	}
 
 
 }

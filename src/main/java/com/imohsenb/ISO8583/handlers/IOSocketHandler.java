@@ -20,136 +20,135 @@ import java.util.Arrays;
  * @author Mohsen Beiranvand
  */
 public class IOSocketHandler implements SocketHandler {
-    private Socket socket;
-    private BufferedOutputStream socketWriter;
-    private BufferedInputStream socketReader;
-    private ISOClientEventListener isoClientEventListener;
+	private Socket socket;
+	private BufferedOutputStream socketWriter;
+	private BufferedInputStream socketReader;
+	private ISOClientEventListener isoClientEventListener;
 
-    public void init(String host, int port, ISOClientEventListener isoClientEventListener, SSLHandler sslHandler) throws ISOClientException {
+	public void init(String host, int port, ISOClientEventListener isoClientEventListener, SSLHandler sslHandler) throws ISOClientException {
 
-        this.isoClientEventListener = isoClientEventListener;
+		this.isoClientEventListener = isoClientEventListener;
 
-        SSLContext context = null;
-        try {
+		SSLContext context = null;
+		try {
 
-            context = sslHandler.getContext();
-            SSLSocketFactory sslsocketfactory = context.getSocketFactory();
-            SSLSocket socket = (SSLSocket) sslsocketfactory.createSocket(
-                    host, port);
-            socket.setNeedClientAuth(false);
+			context = sslHandler.getContext();
+			SSLSocketFactory sslsocketfactory = context.getSocketFactory();
+			SSLSocket socket = (SSLSocket) sslsocketfactory.createSocket(
+					host, port);
+			socket.setNeedClientAuth(false);
 
-            socket.startHandshake();
+			socket.startHandshake();
 
-            this.socket = socket;
+			this.socket = socket;
 
-            postInit();
+			postInit();
 
-        } catch (Exception e) {
-            throw new ISOClientException(e);
-        }
+		} catch (Exception e) {
+			throw new ISOClientException(e);
+		}
 
-    }
+	}
 
-    public void init(String host, int port, ISOClientEventListener isoClientEventListener) throws IOException {
+	public void init(String host, int port, ISOClientEventListener isoClientEventListener) throws IOException {
 
-        this.isoClientEventListener = isoClientEventListener;
-        this.socket = new Socket(host, port);
-        postInit();
+		this.isoClientEventListener = isoClientEventListener;
+		this.socket = new Socket(host, port);
+		postInit();
 
-    }
-
-
-    private void postInit() throws IOException {
-        socketWriter = new BufferedOutputStream(socket.getOutputStream());
-    }
-
-    public byte[] sendMessageSync(ByteBuffer buffer, int length) throws IOException, ISOClientException {
-
-        isoClientEventListener.beforeSendingMessage();
-
-        for (byte v :
-                buffer.array()) {
-            socketWriter.write(v);
-        }
-
-        socketWriter.flush();
-
-        ByteBuffer readBuffer = ByteBuffer.allocate(1024);
-        socketReader = new BufferedInputStream(socket.getInputStream());
-
-        isoClientEventListener.afterSendingMessage();
+	}
 
 
-        isoClientEventListener.beforeReceiveResponse();
+	private void postInit() throws IOException {
+		socketWriter = new BufferedOutputStream(socket.getOutputStream());
+	}
 
-        try {
+	public byte[] sendMessageSync(ByteBuffer buffer, int length) throws IOException, ISOClientException {
 
-            if(length > 0)
-            {
-                byte[] bLen = new byte[length];
-                socketReader.read(bLen,0,length);
-                int mLen = (bLen[0] & 0xff) + (bLen[1] & 0xff);
-            }
+		isoClientEventListener.beforeSendingMessage();
 
-            int r;
-            int fo = 512;
-            do{
-                r = socketReader.read();
-                if (!(r == -1 && socketReader.available() == 0)) {
-                    readBuffer.put((byte) r);
-                } else {
-                    fo--;
-                }
-            }while (
-                    ((r > -1 && socketReader.available() > 0) ||
-                            (r == -1 && readBuffer.position() <= 1)) &&
-                            fo > 0
+		for (byte v :
+				buffer.array()) {
+			socketWriter.write(v);
+		}
 
-                    );
+		socketWriter.flush();
+
+		ByteBuffer readBuffer = ByteBuffer.allocate(1024);
+		socketReader = new BufferedInputStream(socket.getInputStream());
+
+		isoClientEventListener.afterSendingMessage();
 
 
-            byte[] resp = Arrays.copyOfRange(readBuffer.array(),0,readBuffer.position());
+		isoClientEventListener.beforeReceiveResponse();
 
-            isoClientEventListener.afterReceiveResponse();
+		try {
 
-            return resp;
+			if (length > 0) {
+				byte[] bLen = new byte[length];
+				socketReader.read(bLen, 0, length);
+				int mLen = (bLen[0] & 0xff) + (bLen[1] & 0xff);
+			}
 
-        } catch (SocketTimeoutException e) {
-            throw new ISOClientException("Read Timeout");
-        } finally {
-            readBuffer.clear();
-            readBuffer.compact();
-            readBuffer = null;
-        }
-    }
+			int r;
+			int fo = 512;
+			do {
+				r = socketReader.read();
+				if (!(r == -1 && socketReader.available() == 0)) {
+					readBuffer.put((byte) r);
+				} else {
+					fo--;
+				}
+			} while (
+					((r > -1 && socketReader.available() > 0) ||
+							(r == -1 && readBuffer.position() <= 1)) &&
+							fo > 0
 
-    public synchronized void close() {
-        try {
-            if(socketWriter!=null)
-                socketWriter.close();
-            if(socketReader!=null)
-                socketReader.close();
-            if(socket!=null)
-                socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+			);
 
-    @Override
-    public void setReadTimeout(int readTimeout) throws SocketException {
-        socket.setSoTimeout(readTimeout);
-    }
 
-    @Override
-    public boolean isConnected() {
-        if(socket != null)
-            return socket.isConnected();
-        return false;
-    }
+			byte[] resp = Arrays.copyOfRange(readBuffer.array(), 0, readBuffer.position());
 
-    @Override
-    public boolean isClosed() {
-        return socket == null || socket.isClosed();
-    }
+			isoClientEventListener.afterReceiveResponse();
+
+			return resp;
+
+		} catch (SocketTimeoutException e) {
+			throw new ISOClientException("Read Timeout");
+		} finally {
+			readBuffer.clear();
+			readBuffer.compact();
+			readBuffer = null;
+		}
+	}
+
+	public synchronized void close() {
+		try {
+			if (socketWriter != null)
+				socketWriter.close();
+			if (socketReader != null)
+				socketReader.close();
+			if (socket != null)
+				socket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void setReadTimeout(int readTimeout) throws SocketException {
+		socket.setSoTimeout(readTimeout);
+	}
+
+	@Override
+	public boolean isConnected() {
+		if (socket != null)
+			return socket.isConnected();
+		return false;
+	}
+
+	@Override
+	public boolean isClosed() {
+		return socket == null || socket.isClosed();
+	}
 }

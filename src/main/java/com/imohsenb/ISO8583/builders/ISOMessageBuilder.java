@@ -14,94 +14,91 @@ import com.imohsenb.ISO8583.utils.StringUtil;
  */
 public class ISOMessageBuilder {
 
-    public static MessageClass Packer(VERSION version)
-    {
-        return new Builder(version.getCode());
-    }
+	public static MessageClass Packer(VERSION version) {
+		return new Builder(version.getCode());
+	}
 
-    private static class Builder implements MessageClass {
+	private static class Builder implements MessageClass {
 
-        private final String version;
+		private final String version;
 
-        public Builder(String version) {
-            this.version = version;
-        }
-
-
-        @Override
-        public MessagePacker<GeneralMessageClassBuilder> authorization() {
-            return new GeneralMessageClassBuilder(version,"1");
-        }
-
-        @Override
-        public MessagePacker<GeneralMessageClassBuilder> financial() {
-            return new GeneralMessageClassBuilder(version,"2");
-        }
-
-        @Override
-        public MessagePacker<GeneralMessageClassBuilder> fileAction() {
-            return new GeneralMessageClassBuilder(version,"3");
-        }
-
-        @Override
-        public MessagePacker<GeneralMessageClassBuilder> reversal() {
-            return new GeneralMessageClassBuilder(version,"4");
-        }
-
-        @Override
-        public MessagePacker<GeneralMessageClassBuilder> reconciliation() {
-            return new GeneralMessageClassBuilder(version,"5");
-        }
-
-        @Override
-        public MessagePacker<GeneralMessageClassBuilder> administrative() {
-            return new GeneralMessageClassBuilder(version,"6");
-        }
-
-        @Override
-        public MessagePacker<GeneralMessageClassBuilder> feeCollection() {
-            return new GeneralMessageClassBuilder(version,"7");
-        }
-
-        @Override
-        public MessagePacker<GeneralMessageClassBuilder> networkManagement() {
-            return new GeneralMessageClassBuilder(version,"8");
-        }
-
-    }
+		public Builder(String version) {
+			this.version = version;
+		}
 
 
-    public static UnpackMessage Unpacker()
-    {
-        return new UnpackBuilder();
-    }
+		@Override
+		public MessagePacker<GeneralMessageClassBuilder> authorization() {
+			return new GeneralMessageClassBuilder(version, "1");
+		}
 
-    public static class UnpackBuilder implements UnpackMessage,UnpackMethods {
+		@Override
+		public MessagePacker<GeneralMessageClassBuilder> financial() {
+			return new GeneralMessageClassBuilder(version, "2");
+		}
 
-        private byte[] message;
+		@Override
+		public MessagePacker<GeneralMessageClassBuilder> fileAction() {
+			return new GeneralMessageClassBuilder(version, "3");
+		}
 
-        @Override
-        public UnpackMethods setMessage(byte[] message) {
-            this.message = message;
-            return this;
-        }
+		@Override
+		public MessagePacker<GeneralMessageClassBuilder> reversal() {
+			return new GeneralMessageClassBuilder(version, "4");
+		}
 
-        @Override
-        public UnpackMethods setMessage(String message) {
-            setMessage(StringUtil.hexStringToByteArray(message));
-            return this;
-        }
+		@Override
+		public MessagePacker<GeneralMessageClassBuilder> reconciliation() {
+			return new GeneralMessageClassBuilder(version, "5");
+		}
 
-        @Override
-        public ISOMessage build() throws ISOException {
+		@Override
+		public MessagePacker<GeneralMessageClassBuilder> administrative() {
+			return new GeneralMessageClassBuilder(version, "6");
+		}
 
-            ISOMessage finalMessage = new ISOMessage();
-            finalMessage.setMessage(message);
-            return finalMessage;
-        }
+		@Override
+		public MessagePacker<GeneralMessageClassBuilder> feeCollection() {
+			return new GeneralMessageClassBuilder(version, "7");
+		}
+
+		@Override
+		public MessagePacker<GeneralMessageClassBuilder> networkManagement() {
+			return new GeneralMessageClassBuilder(version, "8");
+		}
+
+	}
 
 
+	public static UnpackMessage Unpacker() {
+		return new UnpackBuilder();
+	}
 
-    }
+	public static class UnpackBuilder implements UnpackMessage, UnpackMethods {
+
+		private byte[] message;
+
+		@Override
+		public UnpackMethods setMessage(byte[] message) {
+			this.message = message;
+			return this;
+		}
+
+		@Override
+		public UnpackMethods setMessage(String message) {
+			setMessage(StringUtil.hexStringToByteArray(message));
+			return this;
+		}
+
+		@Override
+		public ISOMessage build() throws ISOException {
+
+			ISOMessage finalMessage = new ISOMessage();
+			finalMessage.setMessage(message);
+			return finalMessage;
+		}
+
+
+	}
 
 }

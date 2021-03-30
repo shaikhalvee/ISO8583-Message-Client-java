@@ -8,5 +8,5 @@ import java.math.BigDecimal;
 public interface Financial<T> {
 
 
-    DataElement<T> setAmount(BigDecimal amount);
+	DataElement<T> setAmount(BigDecimal amount);
 }
